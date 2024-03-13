@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import {
   Avatar,
@@ -20,10 +20,16 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CommentIcon from "@mui/icons-material/Comment";
 
 function Post(props) {
-  const { userId, userName, title, text } = props;
+  const { postId, userId, userName, title, text } = props;
   const [expanded, setExpanded] = React.useState(false);
+  const [commentList, setCommentList] = useState([]);
+  const [error, setError] = useState(null);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const isInitialMount = useRef(true);
+
   const handleExpandClick = () => {
     setExpanded(!expanded);
+    refreshComments();
   };
 
   const [liked, setLiked] = useState(false);
@@ -32,8 +38,28 @@ function Post(props) {
     setLiked(!liked);
   };
 
+  const refreshComments = () => {
+    fetch("/comments?postId=" + postId)
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          setIsLoaded(true);
+          setCommentList(result);
+        },
+        (error) => {
+          setIsLoaded(true);
+          setError(error);
+        }
+      );
+  };
+
+  useEffect(() => {
+    if (isInitialMount.current) isInitialMount.current = false;
+    else refreshComments();
+  }, [commentList]);
+
   return (
-    <Card sx={{ width: 800 }}>
+    <Card sx={{ width: 800, margin: "20px" }}>
       <CardHeader
         avatar={
           <Link className="nav-link" to={{ pathname: "/users/" + userId }}>

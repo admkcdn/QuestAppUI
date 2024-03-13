@@ -2,13 +2,14 @@ import React, { useEffect, useState } from "react";
 import Post from "../Post/Post";
 import "../Home/Home.scss";
 import { Container } from "@mui/material";
+import PostForm from "../Post/PostForm";
 
 function Home() {
   const [error, setError] = useState(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [postList, setPostList] = useState([]);
 
-  useEffect(() => {
+  const refreshPost = () => {
     fetch("/posts")
       .then((res) => res.json())
       .then(
@@ -21,7 +22,11 @@ function Home() {
           setError(error);
         }
       );
-  }, []);
+  };
+
+  useEffect(() => {
+    refreshPost();
+  }, [postList]);
 
   if (error) {
     return <div>Error</div>;
@@ -30,8 +35,19 @@ function Home() {
   } else {
     return (
       <Container fixed className="container">
+        <PostForm
+          userId={1}
+          userName={"sadasd"}
+          refreshPost={refreshPost}
+        />
         {postList.map((post) => (
-          <Post userId={post.userId} userName={post.userName} title={post.title} text={post.text}></Post>
+          <Post
+          postId={post.id}
+            userId={post.userId}
+            userName={post.userName}
+            title={post.title}
+            text={post.text}
+          ></Post>
         ))}
       </Container>
     );
